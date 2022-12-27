@@ -1,8 +1,10 @@
 package com.neuedu.weather;
 
+import org.apache.commons.configuration2.SystemConfiguration;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
@@ -23,7 +25,7 @@ import java.util.Scanner;
  * @Data: 2022/12/27 9:15
  * @Description: TODO
  */
-public class Step3 {
+public class QueryWeatherOfYear {
     private static class Step3Mapper extends Mapper<LongWritable, Text,Text,WeatherWritable> {
         @Override
         protected void map(LongWritable key, Text value, Mapper<LongWritable, Text, Text, WeatherWritable>.Context context) throws IOException, InterruptedException {
@@ -40,14 +42,17 @@ public class Step3 {
             WeatherWritable w=new WeatherWritable(items[0],Double.parseDouble(items[1]),Double.parseDouble(items[2]),Double.parseDouble(items[3]),Double.parseDouble(items[4]));
             //取年份
             String code=items[0].split("_")[0];
-            String year=items[0].substring(items[0].lastIndexOf("/"));
+            String year=items[0].substring(items[0].lastIndexOf("/")+1);
+            if(!year.equals(context.getConfiguration().get("year"))){
+                return;
+            }
             //输出
             context.write(new Text(code+"_"+year), w);
         }
     }
-    private static class Step3Reducer extends Reducer<Text, WeatherWritable,Text, Text> {
+    private static class Step3Reducer extends Reducer<Text, WeatherWritable,Text, NullWritable> {
         @Override
-        protected void reduce(Text key, Iterable<WeatherWritable> values, Reducer<Text, WeatherWritable, Text, Text>.Context context) throws IOException, InterruptedException {
+        protected void reduce(Text key, Iterable<WeatherWritable> values, Reducer<Text, WeatherWritable, Text, NullWritable>.Context context) throws IOException, InterruptedException {
             WeatherWritable w = new WeatherWritable();
             w.setCode_date(key.toString());
             w.setMaxTemperature(Double.MIN_VALUE);
@@ -68,16 +73,22 @@ public class Step3 {
                 }
                 numberDay+=1;
             }
-            String avgTemperature=String.format("%.1f",w.getAvgTemperature()/numberDay);
-            context.write(new Text(key), new Text(""+w.getMaxTemperature()+"\t"+w.getMinTemperature()+"\t"+avgTemperature+"\t"+rainyDay));
+            String avgTemperature=String.format("%.1f",(w.getAvgTemperature()/numberDay));
+            String year=key.toString().split("_")[1];
+            context.write(new Text(year+"年的天气统计:\n\t最高气温\t最低气温\t平均气温\t下雨天数\n\t"+w.getMaxTemperature()+"°C\t"+w.getMinTemperature()+"°C\t"+avgTemperature+"°C\t"+rainyDay+"天"),NullWritable.get());
         }
     }
     public static void run(String input, String output) {
         try {
             //输入年份
             Scanner scanner = new Scanner(System.in);
-            System.out.println("请输入查询年份:");
+            System.out.println("请输入查询年份,输入其他信息返回主菜单:");
             String year = scanner.next();
+            // 判断输入正确性
+            if(Integer.parseInt(year)<1962||Integer.parseInt(year)>2019){
+                System.out.println("仅能查询1962-2019年的数据，将返回主菜单");
+                return;
+            }
             // 传递年份:通过配置对象将参数设置为全局
             HadoopUtils.getConf().set("year",year);
             // 定义输入输出路径
@@ -89,7 +100,7 @@ public class Step3 {
             // 定义job任务
             Job job = Job.getInstance(HadoopUtils.getConf(),"step3");
             // 设置Jar包
-            job.setJarByClass(Step3.class);
+            job.setJarByClass(QueryWeatherOfYear.class);
             // 设定输入
             job.setInputFormatClass(TextInputFormat.class);
             FileInputFormat.setInputPaths(job,input);
@@ -100,7 +111,7 @@ public class Step3 {
             // 设置自定义Reducer
             job.setReducerClass(Step3Reducer.class);
             job.setOutputKeyClass(Text.class);
-            job.setOutputValueClass(Text.class);
+            job.setOutputValueClass(NullWritable.class);
             // 设置输出文件
             job.setOutputFormatClass(TextOutputFormat.class);
             FileOutputFormat.setOutputPath(job,outputPath);
@@ -113,6 +124,8 @@ public class Step3 {
             } else {
                 System.out.println("Failure!");
             }
+        }catch (NumberFormatException e){
+            return;
         } catch (Exception e) {
             e.printStackTrace();
         }

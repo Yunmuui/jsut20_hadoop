@@ -32,12 +32,13 @@ public class Starter {
         System.out.println("--------------------------");
         System.out.println("----- 天气综合查询系统 -----");
         System.out.println("--------------------------");
-        System.out.println("1.数据清洗");
-        System.out.println("2.查询指定日期的天气");
-        System.out.println("3.");
-        System.out.println("4.");
+        System.out.println("1.查询指定日期的天气");
+        System.out.println("2.查询指定年份的天气统计");
+        System.out.println("3.查询指定年份每月天气");
+        System.out.println("4.预测一日天气");
+        System.out.println("5.预测一周天气");
         System.out.println("0.退出");
-        System.out.print("请输入您的选择（0--9）:");
+        System.out.print("请输入您的选择（0--5）:");
     }
 
     public static void manager(){
@@ -48,23 +49,34 @@ public class Starter {
             choice=scanner.nextInt();
             switch(choice) {
                 case 0:
+                    exited=true;
                     break;
                 case 1:
+                    QueryWeatherOfDate.run(ALL_PATHS.get("step2_input"),ALL_PATHS.get("step2_output"));
                     break;
                 case 2:
+                    QueryWeatherOfYear.run(ALL_PATHS.get("step3_input"),ALL_PATHS.get("step3_output"));
                     break;
                 case 3:
                     break;
                 case 4:
+                    PredictWeatherOfDate.run(ALL_PATHS.get("step4_input"),ALL_PATHS.get("step4_output"));
+                    break;
+                case 5:
+                    break;
+                default:
+                    System.out.println("输入错误！请输入数字（0--5）!");
+                    break;
             }
+            System.out.println("***按回车键继续***");
+            try {System.in.read();} catch(Exception e) {}
         }while(!exited);
         System.out.println("谢谢你的使用，再见！");
     }
 
     public static void main(String[] args) {
-        //Step1.run(ALL_PATHS.get("step1_input"),ALL_PATHS.get("step1_output"));
-        //Step2.run(ALL_PATHS.get("step2_input"),ALL_PATHS.get("step2_output"));
-        //Step3.run(ALL_PATHS.get("step3_input"),ALL_PATHS.get("step3_output"));
-        Step4.run(ALL_PATHS.get("step4_input"),ALL_PATHS.get("step4_output"));
+        /// 清洗数据，测试不用
+        //CleanData.run(ALL_PATHS.get("step1_input"),ALL_PATHS.get("step1_output"));
+        manager();
     }
 }
