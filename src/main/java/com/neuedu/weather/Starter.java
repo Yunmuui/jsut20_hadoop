@@ -18,14 +18,18 @@ public class Starter {
     private static Scanner scanner = new Scanner(System.in);
 
     static {
-        ALL_PATHS.put("step1_input","/brazil_weather");
-        ALL_PATHS.put("step1_output","/step1_output");
-        ALL_PATHS.put("step2_input","/step1_output");
-        ALL_PATHS.put("step2_output","/step2_output");
-        ALL_PATHS.put("step3_input","/step1_output");
-        ALL_PATHS.put("step3_output","/step3_output");
-        ALL_PATHS.put("step4_input","/step1_output");
-        ALL_PATHS.put("step4_output","/step4_output");
+        ALL_PATHS.put("dataCleaning_input","/brazil_weather");
+        ALL_PATHS.put("dataCleaning_output","/dataCleaning_output");
+        ALL_PATHS.put("queryWeatherOfDate_input","/dataCleaning_output");
+        ALL_PATHS.put("queryWeatherOfDate_output","/queryWeatherOfDate_output");
+        ALL_PATHS.put("queryWeatherOfYear_input","/dataCleaning_output");
+        ALL_PATHS.put("queryWeatherOfYear_output","/queryWeatherOfYear_output");
+        ALL_PATHS.put("queryMonthWeatherOfYear_input","/dataCleaning_output");
+        ALL_PATHS.put("queryMonthWeatherOfYear_output","/queryWeather_output");
+        ALL_PATHS.put("predictWeatherOfDate_input","/dataCleaning_output");
+        ALL_PATHS.put("predictWeatherOfDate_output","/predictWeatherOfDate_output");
+        ALL_PATHS.put("step5_input","/step1_output");
+        ALL_PATHS.put("step5_output","/step5_output");
     }
 
     public static void showMenu(){
@@ -52,15 +56,16 @@ public class Starter {
                     exited=true;
                     break;
                 case 1:
-                    QueryWeatherOfDate.run(ALL_PATHS.get("step2_input"),ALL_PATHS.get("step2_output"));
+                    QueryWeatherOfDate.run(ALL_PATHS.get("queryWeatherOfDate_input"),ALL_PATHS.get("queryWeatherOfDate_output"));
                     break;
                 case 2:
-                    QueryWeatherOfYear.run(ALL_PATHS.get("step3_input"),ALL_PATHS.get("step3_output"));
+                    QueryWeatherOfYear.run(ALL_PATHS.get("queryWeatherOfYear_input"),ALL_PATHS.get("queryWeatherOfYear_output"));
                     break;
                 case 3:
+                    QueryMonthWeatherOfYear.run(ALL_PATHS.get("queryMonthWeatherOfYear_input"),ALL_PATHS.get("queryMonthWeatherOfYear_output"));
                     break;
                 case 4:
-                    PredictWeatherOfDate.run(ALL_PATHS.get("step4_input"),ALL_PATHS.get("step4_output"));
+                    PredictWeatherOfDate.run(ALL_PATHS.get("predictWeatherOfDate_input"),ALL_PATHS.get("predictWeatherOfDate_output"));
                     break;
                 case 5:
                     break;
@@ -76,7 +81,7 @@ public class Starter {
 
     public static void main(String[] args) {
         /// 清洗数据，测试不用
-        //CleanData.run(ALL_PATHS.get("step1_input"),ALL_PATHS.get("step1_output"));
+        CleanData.run(ALL_PATHS.get("dataCleaning_input"),ALL_PATHS.get("dataCleaning_output"));
         manager();
     }
 }
