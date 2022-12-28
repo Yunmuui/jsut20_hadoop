@@ -72,7 +72,7 @@ public class QueryWeatherOfYear {
             }
             String avgTemperature=String.format("%.1f",(w.getAvgTemperature()/numberDay));
             String year=key.toString().split("_")[1];
-            context.write(new Text(year+"年的天气统计:\n\t最高气温\t最低气温\t平均气温\t下雨天数\n\t"+w.getMaxTemperature()+"°C\t"+w.getMinTemperature()+"°C\t"+avgTemperature+"°C\t"+rainyDay+"天"),NullWritable.get());
+            context.write(new Text(year+"\t"+w.getMaxTemperature()+"°C\t"+w.getMinTemperature()+"°C\t"+avgTemperature+"°C\t"+rainyDay+"天"),NullWritable.get());
         }
     }
     public static void run(String input, String output) {
@@ -107,6 +107,7 @@ public class QueryWeatherOfYear {
             if(success) {
                 System.out.println("Step3:统计结束~~!");
                 // 显示数据
+                System.out.println("\t\t最高气温\t最低气温\t平均气温\t下雨天数");
                 HadoopUtils.showContent(HadoopUtils.getFileSystem(),outputPath);
             } else {
                 System.out.println("Failure!");
