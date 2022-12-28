@@ -37,7 +37,7 @@ public class Starter {
         System.out.println("----- 天气综合查询系统 -----");
         System.out.println("--------------------------");
         System.out.println("1.查询指定日期的天气");
-        System.out.println("2.查询指定年份的天气统计");
+        System.out.println("2.查询每年的天气统计");
         System.out.println("3.查询指定年份每月天气");
         System.out.println("4.预测一日天气");
         System.out.println("5.预测一周天气");
