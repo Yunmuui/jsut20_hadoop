@@ -20,15 +20,14 @@ import java.util.Date;
 import java.util.Scanner;
 
 /**
- * 预测指定日期天气
  * @Projectname: jsut20_hadoop
- * @Filename: Step4
+ * @Filename: PredictWeatherOfWeek
  * @Author: Zhangjunnan
- * @Data: 2022/12/27 14:21
+ * @Data: 2022/12/28 9:37
  * @Description: TODO
  */
-public class PredictWeatherOfDate {
-    private static class StepMapper extends Mapper<LongWritable, Text,Text,WeatherWritable> {
+public class PredictWeatherOfWeek {
+    private static class Step2Mapper extends Mapper<LongWritable, Text,Text,WeatherWritable> {
         @Override
         protected void map(LongWritable key, Text value, Mapper<LongWritable, Text, Text, WeatherWritable>.Context context) throws IOException, InterruptedException {
             String line=value.toString();
@@ -43,34 +42,17 @@ public class PredictWeatherOfDate {
             }
             // 获取查询日期
             String date=context.getConfiguration().get("date");
-            // 历史上的今天，不关注年份
-            String day_month=date.substring(0,date.lastIndexOf("/"));
             // 过滤日期
-            if(items[0].indexOf(day_month)<0) {
+            if(items[0].indexOf(date)<0) {
                 return;
             }
-            String code=items[0].split("_")[0];
-
-            WeatherWritable w=new WeatherWritable(code+"_"+day_month,Double.parseDouble(items[1]),Double.parseDouble(items[2]),Double.parseDouble(items[3]),Double.parseDouble(items[4]));
-            context.write(new Text(w.getCode_date()), w);
+            WeatherWritable w=new WeatherWritable(items[0],Double.parseDouble(items[1]),Double.parseDouble(items[2]),Double.parseDouble(items[3]),Double.parseDouble(items[4]));
+            context.write(new Text(items[0]), w);
         }
     }
-    private static class StepReducer extends Reducer<Text, WeatherWritable,Text, NullWritable> {
+    private static class Step2Reducer extends Reducer<Text, WeatherWritable,Text, NullWritable> {
         @Override
         protected void reduce(Text key, Iterable<WeatherWritable> values, Reducer<Text, WeatherWritable, Text, NullWritable>.Context context) throws IOException, InterruptedException {
-            WeatherWritable w = new WeatherWritable(key.toString(),0.0,0.0,0.0,0.0);
-            int count=0;
-            for(WeatherWritable v:values){
-                w.setPrecipitation(w.getPrecipitation()+v.getPrecipitation());
-                w.setMaxTemperature(w.getMaxTemperature()+v.getMaxTemperature());
-                w.setMinTemperature(w.getMinTemperature()+v.getMinTemperature());
-                w.setAvgTemperature(w.getAvgTemperature()+v.getAvgTemperature());
-                count++;
-            }
-            String precipitation=String.format("%.2f",(w.getPrecipitation()/count));
-            String maxTemperature=String.format("%.1f",(w.getMaxTemperature()/count));
-            String minTemperature=String.format("%.1f",(w.getMinTemperature()/count));
-            String avgTemperature=String.format("%.1f",(w.getAvgTemperature()/count));
             String date=context.getConfiguration().get("date");
             Date temp = null;
             try {
@@ -79,14 +61,16 @@ public class PredictWeatherOfDate {
             } catch (ParseException e) {
                 e.printStackTrace();
             }
-            context.write(new Text(date+"预测数据:\n\t最高温度\t最低温度\t平均温度\t降雨量\n\t"+maxTemperature+"°C\t"+minTemperature+"°C\t"+avgTemperature+"°C\t"+precipitation+"mm"),NullWritable.get());
+            for(WeatherWritable v:values){
+                context.write(new Text(date+"天气数据:\n\t最高温度\t最低温度\t平均温度\t降雨量\n\t"+v.getMaxTemperature()+"°C\t"+v.getMinTemperature()+"°C\t"+v.getAvgTemperature()+"°C\t"+v.getPrecipitation()+"mm"), NullWritable.get());
+            }
         }
     }
     public static void run(String input, String output) {
         try {
-            //输入日期
+            // 输入日期
             Scanner scanner = new Scanner(System.in);
-            System.out.println("请输入查询日期(yyyy/mm/dd),输入其他信息返回主菜单:");
+            System.out.println("请输入查询开始日期(yyyy/mm/dd),输入其他信息返回主菜单:");
             String date = scanner.next();
             // 转换日期格式
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
@@ -103,18 +87,18 @@ public class PredictWeatherOfDate {
             // 判断输出目录是否存在，存在则删除之
             HadoopUtils.delete(HadoopUtils.getFileSystem(),outputPath,true);
             // 定义job任务
-            Job job = Job.getInstance(HadoopUtils.getConf(),"step4");
+            Job job = Job.getInstance(HadoopUtils.getConf(),"QueryWeatherOfDate");
             // 设置Jar包
-            job.setJarByClass(PredictWeatherOfDate.class);
+            job.setJarByClass(PredictWeatherOfWeek.class);
             // 设定输入
             job.setInputFormatClass(TextInputFormat.class);
             FileInputFormat.setInputPaths(job,input);
             // 设置自定义Mapper
-            job.setMapperClass(StepMapper.class);
+            job.setMapperClass(Step2Mapper.class);
             job.setMapOutputKeyClass(Text.class);
             job.setMapOutputValueClass(WeatherWritable.class);
             // 设置自定义Reducer
-            job.setReducerClass(StepReducer.class);
+            job.setReducerClass(Step2Reducer.class);
             job.setOutputKeyClass(Text.class);
             job.setOutputValueClass(NullWritable.class);
             // 设置输出文件
@@ -123,16 +107,15 @@ public class PredictWeatherOfDate {
             // 运行
             boolean success = job.waitForCompletion(true);
             if(success) {
-                System.out.println("预测结束~~!");
+                System.out.println("查询结束~~!");
                 // 显示数据
                 HadoopUtils.showContent(HadoopUtils.getFileSystem(),outputPath);
             } else {
-                System.out.println("预测失败!");
+                System.out.println("查询失败!");
             }
         } catch (ParseException e){
             return;
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
