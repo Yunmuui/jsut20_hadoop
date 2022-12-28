@@ -43,9 +43,6 @@ public class QueryWeatherOfYear {
             //取年份
             String code=items[0].split("_")[0];
             String year=items[0].substring(items[0].lastIndexOf("/")+1);
-            if(!year.equals(context.getConfiguration().get("year"))){
-                return;
-            }
             //输出
             context.write(new Text(code+"_"+year), w);
         }
@@ -80,17 +77,7 @@ public class QueryWeatherOfYear {
     }
     public static void run(String input, String output) {
         try {
-            //输入年份
-            Scanner scanner = new Scanner(System.in);
-            System.out.println("请输入查询年份,输入其他信息返回主菜单:");
-            String year = scanner.next();
-            // 判断输入正确性
-            if(Integer.parseInt(year)<1962||Integer.parseInt(year)>2019){
-                System.out.println("仅能查询1962-2019年的数据，将返回主菜单");
-                return;
-            }
-            // 传递年份:通过配置对象将参数设置为全局
-            HadoopUtils.getConf().set("year",year);
+
             // 定义输入输出路径
             //String input = "/step1_output";
             //String output = "/step2_output";
