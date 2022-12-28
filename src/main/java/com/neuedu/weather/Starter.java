@@ -28,8 +28,8 @@ public class Starter {
         ALL_PATHS.put("queryMonthWeatherOfYear_output","/queryWeather_output");
         ALL_PATHS.put("predictWeatherOfDate_input","/dataCleaning_output");
         ALL_PATHS.put("predictWeatherOfDate_output","/predictWeatherOfDate_output");
-        ALL_PATHS.put("step5_input","/step1_output");
-        ALL_PATHS.put("step5_output","/step5_output");
+        ALL_PATHS.put("predictWeatherOfWeek_input","/dataCleaning_output");
+        ALL_PATHS.put("predictWeatherOfWeek_output","/predictWeatherOfWeek_output");
     }
 
     public static void showMenu(){
@@ -68,6 +68,7 @@ public class Starter {
                     PredictWeatherOfDate.run(ALL_PATHS.get("predictWeatherOfDate_input"),ALL_PATHS.get("predictWeatherOfDate_output"));
                     break;
                 case 5:
+                    PredictWeatherOfWeek.run(ALL_PATHS.get("predictWeatherOfWeek_input"),ALL_PATHS.get("predictWeatherOfWeek_output"));
                     break;
                 default:
                     System.out.println("输入错误！请输入数字（0--5）!");
