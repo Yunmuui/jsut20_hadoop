@@ -81,7 +81,7 @@ public class Starter {
     }
 
     public static void main(String[] args) {
-        /// 清洗数据，测试不用
+        //清洗数据，测试不用
         //CleanData.run(ALL_PATHS.get("dataCleaning_input"),ALL_PATHS.get("dataCleaning_output"));
         manager();
     }
